@@ -1,80 +1,59 @@
 <template>
   <div class="home">
-  <b-row class="align-center">
-    <b-col cols="2" class="text-center"><b>2 Members Selected</b></b-col>
-    <b-col cols="6" class="text-center"></b-col>
-    <b-col cols="4" class="text-center">
-      <b-col cols="5" class="text-center">
-        <b-dropdown id="dropdown-right" :text=" filterOn !== '' ? filterOn : 'Filter By All'" variant="outline-primary" v-model="filterOn" class="m-md-2">
-          <b-dropdown-item>All</b-dropdown-item>
-          <b-dropdown-item>1 reminder sent</b-dropdown-item>
-          <b-dropdown-item>Started</b-dropdown-item>
-          <b-dropdown-item>Completed</b-dropdown-item>
-          <b-dropdown-item>2 reminders sent</b-dropdown-item>
-        </b-dropdown>
-      </b-col>
-      <b-col cols="7" class="text-center mt-md-2 mb-md-2">
-        <div class="form-group has-search">
-          <span class="fa fa-search form-control-feedback"></span>
-          <input type="text" v-model="filter" class="form-control" placeholder="Search">
-        </div>
-      </b-col>
-    </b-col>
-    test{{ filterOn }}
-  </b-row>
-    <b-table
-        :items="members"
-        :filter="filter"
-        :filter-included-fields="[filterOn]"
-        responsive="sm"
-      ></b-table>
-    <!--<b-container-fluid class="bv-example-row rounded">
-      <b-row class="border">
-        <b-col cols="2" class="text-center"><b>2 Members Selected</b></b-col>
+    <div class="table-border border">
+      <b-row class="align-center">
+        <b-col cols="2" class="text-center justify-members"><b>2 Members Selected</b></b-col>
         <b-col cols="6" class="text-center"></b-col>
-        <b-col cols="4" class="text-center">
-          <b-row class="align-center">
-            <b-col cols="5" class="text-center">
-              <b-dropdown id="dropdown-right" text="Filtered By All" variant="outline-primary" class="m-md-2">
-                <b-dropdown-item>All</b-dropdown-item>
-                <b-dropdown-item>1 reminder sent</b-dropdown-item>
-                <b-dropdown-item>Started</b-dropdown-item>
-                <b-dropdown-item>Completed</b-dropdown-item>
-                <b-dropdown-item>2 reminders sent</b-dropdown-item>
+        <b-col cols="4" class="text-center justify-members">
+          <b-row class="justify-members">
+            <b-col cols="5" class="text-center justify-members">
+              <b-dropdown id="dropdown-right" text="Filter By All" variant="outline-primary" v-model="filterOn" class="m-md-2">
+                <b-dropdown-item @click="changeFilterOn('')" :active="filterOn==''">All</b-dropdown-item>
+                <b-dropdown-item @click="changeFilterOn('1 reminder sent')" :active="filterOn=='1 reminder sent'">1 reminder sent</b-dropdown-item>
+                <b-dropdown-item @click="changeFilterOn('Started')" :active="filterOn=='Started'">Started</b-dropdown-item>
+                <b-dropdown-item @click="changeFilterOn('Completed')" :active="filterOn=='Completed'">Completed</b-dropdown-item>
+                <b-dropdown-item @click="changeFilterOn('2 reminders sent')" :active="filterOn=='2 reminders sent'">2 reminders sent</b-dropdown-item>
+                <template v-slot:button-content>
+                  <img alt="Drop Down Icon" src="../assets/dropdownIcon.png" />
+                  {{filterOn !== '' ? filterOn : 'Filter By All'}}
+                </template>
               </b-dropdown>
             </b-col>
-            <b-col cols="7" class="text-center mt-md-2 mb-md-2">
-              <div class="form-group has-search">
+            <b-col cols="7" class="text-center mt-md-2 mb-md-2 justify-members">
+              <div class="has-search">
                 <span class="fa fa-search form-control-feedback"></span>
-                <input type="text" class="form-control" placeholder="Search">
+                <input type="text" v-model="filter" class="form-control" placeholder="Search">
               </div>
             </b-col>
           </b-row>
         </b-col>
       </b-row>
-      <b-row class="border">
-        <b-col class="text-center" cols="1"><input type="checkbox" id="all" /></b-col>
-        <b-col class="text-left" cols="1">ID <img alt="id icon" src="../assets/idIcon.png" /></b-col>
-        <b-col class="text-left" cols="1">NAME</b-col>
-        <b-col class="text-left" cols="1">LANGUAGE</b-col>
-        <b-col class="text-left" cols="4">EMAIL</b-col>
-        <b-col class="text-left" cols="1">ATTRIBUTE 1</b-col>
-        <b-col class="text-left" cols="1">ATTRIBUTE 2</b-col>
-        <b-col class="text-left" cols="1">STATUS</b-col>
-        <b-col class="text-right" cols="1"></b-col>
-      </b-row>
-      <b-row :class="member.selected ? 'selected' : ''" v-for="member in members">
-        <b-col class="text-center" cols="1"><input type="checkbox" :checked="member.selected ? true : false " /></b-col>
-        <b-col class="text-left" cols="1">{{ member.id }}</b-col>
-        <b-col class="text-left" cols="1">{{ member.name }}</b-col>
-        <b-col class="text-left" cols="1">{{ member.language }}</b-col>
-        <b-col class="text-left" cols="4">{{ member.email }}</b-col>
-        <b-col class="text-left" cols="1">{{ member.attr1 }}</b-col>
-        <b-col class="text-left" cols="1">{{ member.attr2 }}</b-col>
-        <b-col class="text-left" cols="1">{{ member.status }}</b-col>
-        <b-col class="text-right" cols="1"></b-col>
-      </b-row>
-    </b-container-fluid>-->
+      <b-table
+          :items="members"
+          :filter="filter"
+          :select-mode="mode"
+          :fields="fields"
+          :filter-included-fields="[filterOn]"
+          ref="selectableTable"
+          selectable
+          @row-selected="onRowSelected"
+          @row-clicked="handleClick"
+          responsive="sm"
+        >
+          <template #cell(selected)="data">
+            <template v-if="data.rowSelected">
+              <span :id="data.item.id"></span>
+              <input type="checkbox" :id="`checkbox${data.item.id}`" checked @change="onCheck(data.item.id)" />
+            </template>
+            <template v-else>
+              <span :id="data.item.id"></span>
+              <input type="checkbox" :id="`checkbox${data.item.id}`" @change="onCheck(data.item.id)" />
+            </template>
+          </template>
+        </b-table>
+
+
+    </div>
   </div>
 </template>
 
@@ -87,8 +66,21 @@ export default {
   data() {
     return {
       filter: "",
-      filterOn: "test",
-      fields: ["ID", "NANME", "LANGUAGE", "EMAIL", "ATTRIBUTE 1", "ATTRIBUTE 2", "STATUS", ""],
+      filterOn: "",
+      sortBy: "",
+      mode: 'multi',
+      selected: [],
+      fields: [
+        { key: 'selected', label: '<p>test</p>', sortable: false, sortDirection: 'desc'},
+        { key: 'id', label: 'ID', sortable: true, sortDirection: 'desc'},
+        { key: 'name', label: 'Name', sortable: false},
+        { key: 'language', label: 'LANGUAGE ', sortable: false},
+        { key: 'email', label: 'EMAIL', sortable: false},
+        { key: 'attr1', label: 'ATTRIBUTE 1', sortable: false},
+        { key: 'attr2', label: 'ATTRIBUTE 2', sortable: false},
+        { key: 'status', label: 'STATUS', sortable: false},
+        { key: '', label: '', sortable: false}
+      ],
       members: []
     };
   },
@@ -170,8 +162,17 @@ export default {
     HelloWorld
   },
   methods: {
-    changeFilterOn() {
-      console.log("test");
+    onRowSelected(items) {
+      this.selected = items
+    },
+    handleClick(data) {
+      // document.getElementById(`checkbox${data.id}`).click();
+    },
+    onCheck(id) {
+      document.getElementById(id).click();
+    },
+    changeFilterOn(val) {
+      this.filterOn = val;
     }
   }
 }
@@ -180,25 +181,35 @@ export default {
 <style lang="scss">
 .home {
   padding: 20px 10px;
-  /*.has-search .form-control {
-      padding-left: 2.375rem;
+  .table-border {
+    border-radius: 10px;
+    .justify-members {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding-left: 30px;
+    }
   }
-
-  .has-search .form-control-feedback {
-      position: absolute;
-      z-index: 2;
-      display: block;
-      width: 2.375rem;
-      height: 2.375rem;
-      line-height: 2.375rem;
-      text-align: center;
-      pointer-events: none;
-      color: #aaa;
+  .has-search {
+    .form-control {
+        padding-left: 2.375rem;
+    }
+    .form-control-feedback {
+        position: absolute;
+        z-index: 2;
+        display: block;
+        width: 2.375rem;
+        height: 2.375rem;
+        line-height: 2.375rem;
+        text-align: center;
+        pointer-events: none;
+        color: #aaa;
+    }
   }
   .selected {
     border: 1px solid #3366FF;
     margin-bottom: -1px;
     background: #EFF3FF;
-  }*/
+  }
 }
 </style>
