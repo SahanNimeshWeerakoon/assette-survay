@@ -98,11 +98,6 @@
             <i class="fa fa-chevron-right" v-if="!row.detailsShowing" @click="row.toggleDetails" aria-hidden="true"></i>
             <i class="fa fa-chevron-down" v-if="row.detailsShowing" @click="row.toggleDetails" area-hidden="true"></i>
           </button>
-
-          <!-- As `row.showDetails` is one-way, we call the toggleDetails function on @change -->
-          <!--<b-form-checkbox v-model="row.detailsShowing" @change="row.toggleDetails">
-            Details via check
-          </b-form-checkbox>-->
         </template>
 
         <template #row-details="row">
@@ -131,9 +126,9 @@
         </template>
 
         <template #cell(actions)="data">
-          <b-dropdown id="dropdown-right" text="Filter By All" variant="outline-primary" v-model="filterOn" class="m-2 mr-2 actionDropdown">
-            <b-dropdown-item @click="changeFilterOn('1 reminder sent')" :active="filterOn=='1 reminder sent'">1 reminder sent</b-dropdown-item>
-            <b-dropdown-item @click="changeFilterOn('Survey Started')" :active="filterOn=='Survey Started'">Survey Started</b-dropdown-item>
+          <b-dropdown id="dropdown-right" style="" text="Filter By All" variant="outline-primary" v-model="filterOn" class="m-2 mr-2 actionDropdown">
+            <b-dropdown-item>Edit</b-dropdown-item>
+            <b-dropdown-item>Delete</b-dropdown-item>
             <template v-slot:button-content>
               <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
             </template>
@@ -146,11 +141,11 @@
 
         <template #cell(selected)="data">
           <template v-if="data.rowSelected">
-            <span :id="data.item.id"></span>
+            <span :id="`mobile${data.item.id}`"></span>
             <input type="checkbox" :id="`checkbox${data.item.id}`" checked @change="onCheck(data.item.id)" />
           </template>
           <template v-else>
-            <span :id="data.item.id"></span>
+            <span :id="`mobile${data.item.id}`"></span>
             <input type="checkbox" :id="`checkbox${data.item.id}`" @change="onCheck(data.item.id)" />
           </template>
         </template>
@@ -277,11 +272,9 @@ export default {
     onRowSelected(items) {
       this.selected = items
     },
-    handleClick(data) {
-      // document.getElementById(`checkbox${data.id}`).click();
-    },
     onCheck(id) {
       document.getElementById(id).click();
+      document.getElementById(`mobile${id}`).click();
     },
     selectAll(event) {
       let checked = event.target.checked;
@@ -299,7 +292,7 @@ export default {
       if(val!=="") {
         filtMem = this.members.filter(member => member.status == val);
       } else {
-        filtMem = this.members;
+        filtMem = this.members.filter(member => true);
       }
       this.filteredMembers = [...filtMem];
     }
@@ -388,8 +381,37 @@ export default {
     }
   }
   .actionDropdown {
-    border: none;
-    color: #000;
+    margin: 0 !important;
+    padding: 0 !important;
+    button {
+      border: none;
+      color: #000;
+      padding: 0;
+      margin: 0;
+      &:hover {
+        background: transparent;
+      }
+      &:focus {
+        outline: none;
+      }
+      &:active {
+        background: transparent;
+      }
+    }
   }
+  .btn-outline-primary:not(:disabled):not(.disabled).active, .btn-outline-primary:not(:disabled):not(.disabled):active, .show>.btn-outline-primary.dropdown-toggle {
+    background: transparent;
+    color: #000;
+    &:focus {
+      outline: none;
+    }
+  }
+.table.b-table > thead > tr > [aria-sort=ascending], .table.b-table > tfoot > tr > [aria-sort=ascending],
+.table.b-table > thead > tr > [aria-sort=descending], .table.b-table > tfoot > tr > [aria-sort=descending],
+.table.b-table > thead > tr > [aria-sort=none], .table.b-table > tfoot > tr > [aria-sort=none] {
+  width: 20px;
+  background-image: url("../assets/idIcon.png");
+  
+}
 }
 </style>

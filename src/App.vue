@@ -32,34 +32,52 @@
   </div>
 </template>
 
-<style lang="scss">
-@import './assets/scss/variables';
+<script>
+import { useRoute } from 'vue-router';
 
-.bg-info {
-  background: #010D2F !important;
-  padding: 0px 16px;
-}
-.profile-picture {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-}
-.dropdown-toggle::after {
-  display: none;
-}
-.navbar-collapse.collapse {
-  @media screen and (min-width: 500px) {
-    margin-left: 200PX;
+export default {
+  name: 'App',
+  data() {
+    return {
+      activeLink: '/'
+    }
+  },
+  methods: {
+    activateLink() {
+      console.log('clicked');
+    }
   }
 }
-.nav-link {
-  padding: 20px 15px !important;
-}
-.nav-link.router-link-exact-active.router-link-active {
-  color: $linkColor;
-  border-bottom: 3px solid;
-}
-.downArrow {
-  color: #000;
-}
+</script>
+
+<style lang="scss">
+  @import './assets/scss/variables';
+
+  .bg-info {
+    background: #010D2F !important;
+    padding: 0px 16px;
+  }
+  .profile-picture {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+  }
+  .dropdown-toggle::after {
+    display: none;
+  }
+  .navbar-collapse.collapse {
+    @media screen and (min-width: 500px) {
+      margin-left: 200PX;
+    }
+  }
+  .nav-link {
+    padding: 20px 15px !important;
+  }
+  .nav-link.router-link-exact-active.router-link-active {
+    color: $linkColor;
+    border-bottom: 3px solid;
+  }
+  .downArrow {
+    color: #000;
+  }
 </style>
