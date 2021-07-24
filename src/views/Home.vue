@@ -2,34 +2,37 @@
   <div class="home">
     <div class="table-border border">
       <b-row class="align-center">
-        <b-col cols="2" class="text-center justify-members"><b>2 Members Selected</b></b-col>
-        <b-col cols="6" class="text-center"></b-col>
-        <b-col cols="4" class="text-center justify-members">
-          <b-row class="justify-members">
-            <b-col cols="5" class="text-center justify-members">
-              <b-dropdown id="dropdown-right" text="Filter By All" variant="outline-primary" v-model="filterOn" class="m-md-2">
+        <b-col md="9" class="border-bottom">
+          <b-row>
+            <b-col cols="8" class="text-center justify-members"><b>{{ selected.length }} Members Selected</b></b-col>
+            <b-col cols="4" class="text-center justify-members">
+              <b-dropdown id="dropdown-right" text="Filter By All" variant="outline-primary" v-model="filterOn" class="m-2 mr-2 filterStatus">
                 <b-dropdown-item @click="changeFilterOn('')" :active="filterOn==''">All</b-dropdown-item>
                 <b-dropdown-item @click="changeFilterOn('1 reminder sent')" :active="filterOn=='1 reminder sent'">1 reminder sent</b-dropdown-item>
-                <b-dropdown-item @click="changeFilterOn('Started')" :active="filterOn=='Started'">Started</b-dropdown-item>
-                <b-dropdown-item @click="changeFilterOn('Completed')" :active="filterOn=='Completed'">Completed</b-dropdown-item>
+                <b-dropdown-item @click="changeFilterOn('Survey Started')" :active="filterOn=='Survey Started'">Survey Started</b-dropdown-item>
+                <b-dropdown-item @click="changeFilterOn('Survey sent')" :active="filterOn=='Survey sent'">Survey sent</b-dropdown-item>
+                <b-dropdown-item @click="changeFilterOn('Survey completed')" :active="filterOn=='Survey completed'">Survey completed</b-dropdown-item>
                 <b-dropdown-item @click="changeFilterOn('2 reminders sent')" :active="filterOn=='2 reminders sent'">2 reminders sent</b-dropdown-item>
+                <b-dropdown-item @click="changeFilterOn('Invitation sent')" :active="filterOn=='Invitation sent'">Invitation sent</b-dropdown-item>
                 <template v-slot:button-content>
                   <img alt="Drop Down Icon" src="../assets/dropdownIcon.png" />
-                  {{filterOn !== '' ? filterOn : 'Filter By All'}}
+                  <span class="d-none d-md-inline-block">&nbsp;{{filterOn !== '' ? filterOn : 'Filter By All'}}</span>
                 </template>
               </b-dropdown>
             </b-col>
-            <b-col cols="7" class="text-center mt-md-2 mb-md-2 justify-members">
-              <div class="has-search">
-                <span class="fa fa-search form-control-feedback"></span>
-                <input type="text" v-model="filter" class="form-control" placeholder="Search">
-              </div>
-            </b-col>
           </b-row>
         </b-col>
+        <b-col md="3" class="text-center justify-members border-bottom searchDiv">
+          <div class="has-search">
+            <span class="fa fa-search form-control-feedback"></span>
+            <input type="text" v-model="filter" class="form-control" placeholder="Search">
+          </div>
+        </b-col>
       </b-row>
+      
+      <!-- Desktop table -->
       <b-table
-          :items="members"
+          :items="filteredMembers"
           :filter="filter"
           :select-mode="mode"
           :fields="fields"
@@ -38,21 +41,121 @@
           selectable
           @row-selected="onRowSelected"
           @row-clicked="handleClick"
-          responsive="sm"
+          responsive="md"
+          class="d-none d-sm-block d-sm-none d-md-block"
         >
-          <template #cell(selected)="data">
-            <template v-if="data.rowSelected">
-              <span :id="data.item.id"></span>
-              <input type="checkbox" :id="`checkbox${data.item.id}`" checked @change="onCheck(data.item.id)" />
-            </template>
-            <template v-else>
-              <span :id="data.item.id"></span>
-              <input type="checkbox" :id="`checkbox${data.item.id}`" @change="onCheck(data.item.id)" />
-            </template>
+
+        <template v-slot:head(selected)="data">
+          <input type="checkbox" @change="selectAll($event)" />
+        </template>
+      
+        <template #cell(selected)="data">
+          <template v-if="data.rowSelected">
+            <span :id="data.item.id"></span>
+            <input type="checkbox" :id="`checkbox${data.item.id}`" checked @change="onCheck(data.item.id)" />
           </template>
-        </b-table>
+          <template v-else>
+            <span :id="data.item.id"></span>
+            <input type="checkbox" :id="`checkbox${data.item.id}`" @change="onCheck(data.item.id)" />
+          </template>
+        </template>
 
+        <template #cell(actions)="data">
+          <button class="faBtn">
+            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+          </button>
+          <button class="faBtn">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+          </button>
+          <!--<template v-if="data.rowSelected">
+            <span :id="data.item.id"></span>
+            <input type="checkbox" :id="`checkbox${data.item.id}`" checked @change="onCheck(data.item.id)" />
+          </template>
+          <template v-else>
+            <span :id="data.item.id"></span>
+            <input type="checkbox" :id="`checkbox${data.item.id}`" @change="onCheck(data.item.id)" />
+          </template> -->
+        </template>
 
+      </b-table>
+      <!-- mobile table -->
+      <b-table
+          :items="filteredMembers"
+          :filter="filter"
+          :select-mode="mode"
+          :fields="mobileFields"
+          :filter-included-fields="[filterOn]"
+          ref="selectableTablemobile"
+          selectable
+          @row-selected="onRowSelected"
+          @row-clicked="handleClick"
+          responsive="md"
+          class="d-md-none"
+        >
+
+        <template #cell(plus)="row">
+          <button class="btn-invisible">
+            <i class="fa fa-chevron-right" v-if="!row.detailsShowing" @click="row.toggleDetails" aria-hidden="true"></i>
+            <i class="fa fa-chevron-down" v-if="row.detailsShowing" @click="row.toggleDetails" area-hidden="true"></i>
+          </button>
+
+          <!-- As `row.showDetails` is one-way, we call the toggleDetails function on @change -->
+          <!--<b-form-checkbox v-model="row.detailsShowing" @change="row.toggleDetails">
+            Details via check
+          </b-form-checkbox>-->
+        </template>
+
+        <template #row-details="row">
+          <b-card>
+            <b-row class="mb-2">
+              <b-col cols="5">LANGUAGE</b-col>
+              <b-col cols="7">{{ row.item.language }}</b-col>
+            </b-row>
+            <b-row class="mb-2">
+              <b-col cols="5">EMAIL</b-col>
+              <b-col cols="7">{{ row.item.email }}</b-col>
+            </b-row>
+            <b-row class="mb-2">
+              <b-col cols="5">ATTRIBUTE 1</b-col>
+              <b-col cols="7">{{ row.item.attr1 }}</b-col>
+            </b-row>
+            <b-row class="mb-2">
+              <b-col cols="5">ATTRIBUTE 2</b-col>
+              <b-col cols="7">{{ row.item.attr2 }}</b-col>
+            </b-row>
+            <b-row class="mb-2">
+              <b-col cols="5">STATUS</b-col>
+              <b-col cols="7">{{ row.item.status }}</b-col>
+            </b-row>
+          </b-card>
+        </template>
+
+        <template #cell(actions)="data">
+          <b-dropdown id="dropdown-right" text="Filter By All" variant="outline-primary" v-model="filterOn" class="m-2 mr-2 actionDropdown">
+            <b-dropdown-item @click="changeFilterOn('1 reminder sent')" :active="filterOn=='1 reminder sent'">1 reminder sent</b-dropdown-item>
+            <b-dropdown-item @click="changeFilterOn('Survey Started')" :active="filterOn=='Survey Started'">Survey Started</b-dropdown-item>
+            <template v-slot:button-content>
+              <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+            </template>
+          </b-dropdown>
+        </template>
+
+        <template v-slot:head(selected)="data">
+          <input type="checkbox" @change="selectAll($event)" />
+        </template>
+
+        <template #cell(selected)="data">
+          <template v-if="data.rowSelected">
+            <span :id="data.item.id"></span>
+            <input type="checkbox" :id="`checkbox${data.item.id}`" checked @change="onCheck(data.item.id)" />
+          </template>
+          <template v-else>
+            <span :id="data.item.id"></span>
+            <input type="checkbox" :id="`checkbox${data.item.id}`" @change="onCheck(data.item.id)" />
+          </template>
+        </template>
+
+      </b-table>
     </div>
   </div>
 </template>
@@ -70,6 +173,13 @@ export default {
       sortBy: "",
       mode: 'multi',
       selected: [],
+      mobileFields: [
+        { key: 'plus', label: '', sortable: false},
+        { key: 'selected', label: '<p>test</p>', sortable: false, sortDirection: 'desc'},
+        { key: 'id', label: 'ID', sortable: true, sortDirection: 'desc'},
+        { key: 'name', label: 'Name', sortable: false},
+        { key: 'actions', label: '', sortable: false}
+      ],
       fields: [
         { key: 'selected', label: '<p>test</p>', sortable: false, sortDirection: 'desc'},
         { key: 'id', label: 'ID', sortable: true, sortDirection: 'desc'},
@@ -79,9 +189,10 @@ export default {
         { key: 'attr1', label: 'ATTRIBUTE 1', sortable: false},
         { key: 'attr2', label: 'ATTRIBUTE 2', sortable: false},
         { key: 'status', label: 'STATUS', sortable: false},
-        { key: '', label: '', sortable: false}
+        { key: 'actions', label: '', sortable: false}
       ],
-      members: []
+      members: [],
+      filteredMembers: []
     };
   },
   created() {
@@ -113,7 +224,7 @@ export default {
           email: 'jana.ondricka@hegmann.biz',
           attr1: 'Team 3',
           attr2: 'Senior',
-          status: 'survey Started',
+          status: 'Survey Started',
           selected: false
         },
         {
@@ -156,7 +267,8 @@ export default {
           status: 'Invitation sent',
           selected: false
         }
-      ]
+      ];
+    this.filteredMembers = [...this.members]
   },
   components: {
     HelloWorld
@@ -171,8 +283,25 @@ export default {
     onCheck(id) {
       document.getElementById(id).click();
     },
+    selectAll(event) {
+      let checked = event.target.checked;
+      if(checked) {
+        this.$refs.selectableTable.selectAllRows();
+        this.$refs.selectableTablemobile.selectAllRows();
+      } else {
+        this.$refs.selectableTable.clearSelected();
+        this.$refs.selectableTablemobile.clearSelected();
+      }
+    },
     changeFilterOn(val) {
       this.filterOn = val;
+      let filtMem;
+      if(val!=="") {
+        filtMem = this.members.filter(member => member.status == val);
+      } else {
+        filtMem = this.members;
+      }
+      this.filteredMembers = [...filtMem];
     }
   }
 }
@@ -180,9 +309,10 @@ export default {
 
 <style lang="scss">
 .home {
-  padding: 20px 10px;
+  padding: 40px 30px;
   .table-border {
     border-radius: 10px;
+    overflow: hidden;
     .justify-members {
       display: flex;
       justify-content: flex-start;
@@ -190,26 +320,76 @@ export default {
       padding-left: 30px;
     }
   }
-  .has-search {
-    .form-control {
-        padding-left: 2.375rem;
+  .filterStatus {
+    margin-right: 0 !important;
+    margin-left: auto !important;
+    @media screen and (max-width: 700px) {
+      margin-right: 10px !important;
     }
-    .form-control-feedback {
-        position: absolute;
-        z-index: 2;
-        display: block;
-        width: 2.375rem;
-        height: 2.375rem;
-        line-height: 2.375rem;
-        text-align: center;
-        pointer-events: none;
-        color: #aaa;
+  }
+  .searchDiv {
+    @media screen and (max-width: 700px) {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .has-search {
+      width: 98%;
+      margin-right: 2%;
+      margin-left: auto;
+      .form-control {
+          padding-left: 2.375rem;
+      }
+      .form-control-feedback {
+          position: absolute;
+          z-index: 2;
+          display: block;
+          width: 2.375rem;
+          height: 2.375rem;
+          line-height: 2.375rem;
+          text-align: center;
+          pointer-events: none;
+          color: #aaa;
+      }
     }
   }
   .selected {
     border: 1px solid #3366FF;
     margin-bottom: -1px;
     background: #EFF3FF;
+  }
+  .faBtn {
+    background: none;
+    border: none;
+    padding: 5px;
+    i {
+      font-size: 1.25em;
+    }
+  }
+  .btn-invisible {
+    background: transparent;
+    border: none;
+  }
+  .d-md-inline-block {
+    @media screen and (min-width: 700px) {
+      display: inline-block !important;
+    }
+  }
+  .table.b-table > tbody > .table-active, .table.b-table > tbody > .table-active > th, .table.b-table > tbody > .table-active > td {
+    background: #EFF3FF !important;
+    border-top: 1px solid #3366FF !important;
+    border-bottom: 1px solid #3366FF !important;
+    position: relative;
+    z-index: 10;
+    &:first-child {
+      border-left: 1px solid #3366FF !important;
+    }
+    &:last-child {
+      border-right: 1px solid #3366FF !important;
+    }
+  }
+  .actionDropdown {
+    border: none;
+    color: #000;
   }
 }
 </style>
