@@ -34,13 +34,10 @@
       <b-table
           :items="filteredMembers"
           :filter="filter"
-          :select-mode="mode"
           :fields="fields"
-          :filter-included-fields="[filterOn]"
           ref="selectableTable"
           selectable
           @row-selected="onRowSelected"
-          @row-clicked="handleClick"
           responsive="md"
           class="d-none d-sm-block d-sm-none d-md-block"
         >
@@ -50,14 +47,8 @@
         </template>
       
         <template #cell(selected)="data">
-          <template v-if="data.rowSelected">
-            <span :id="data.item.id"></span>
-            <input type="checkbox" :id="`checkbox${data.item.id}`" checked @change="onCheck(data.item.id)" />
-          </template>
-          <template v-else>
-            <span :id="data.item.id"></span>
-            <input type="checkbox" :id="`checkbox${data.item.id}`" @change="onCheck(data.item.id)" />
-          </template>
+          <span :id="data.item.id"></span>
+          <input type="checkbox" :id="`checkbox${data.item.id}`" :checked="data.rowSelected" @change="onCheck(data.item.id)" />
         </template>
 
         <template #cell(actions)="data">
@@ -67,14 +58,6 @@
           <button class="faBtn">
             <i class="fa fa-trash-o" aria-hidden="true"></i>
           </button>
-          <!--<template v-if="data.rowSelected">
-            <span :id="data.item.id"></span>
-            <input type="checkbox" :id="`checkbox${data.item.id}`" checked @change="onCheck(data.item.id)" />
-          </template>
-          <template v-else>
-            <span :id="data.item.id"></span>
-            <input type="checkbox" :id="`checkbox${data.item.id}`" @change="onCheck(data.item.id)" />
-          </template> -->
         </template>
 
       </b-table>
@@ -84,11 +67,9 @@
           :filter="filter"
           :select-mode="mode"
           :fields="mobileFields"
-          :filter-included-fields="[filterOn]"
           ref="selectableTablemobile"
           selectable
           @row-selected="onRowSelected"
-          @row-clicked="handleClick"
           responsive="md"
           class="d-md-none"
         >
@@ -140,14 +121,8 @@
         </template>
 
         <template #cell(selected)="data">
-          <template v-if="data.rowSelected">
-            <span :id="`mobile${data.item.id}`"></span>
-            <input type="checkbox" :id="`checkbox${data.item.id}`" checked @change="onCheck(data.item.id)" />
-          </template>
-          <template v-else>
-            <span :id="`mobile${data.item.id}`"></span>
-            <input type="checkbox" :id="`checkbox${data.item.id}`" @change="onCheck(data.item.id)" />
-          </template>
+          <span :id="`mobile${data.item.id}`"></span>
+          <input type="checkbox" :id="`checkbox${data.item.id}`" :checked="data.rowSelected" @change="onCheck(data.item.id)" />
         </template>
 
       </b-table>
